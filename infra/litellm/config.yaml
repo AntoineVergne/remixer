@@ -1,0 +1,21 @@
+model_list:
+  - model_name: manifesto-remix
+    litellm_params:
+      model: os.environ/LITELLM_MANIFESTO_MODEL
+      api_key: os.environ/LITELLM_MANIFESTO_API_KEY
+
+  - model_name: homepage-chat
+    litellm_params:
+      model: os.environ/LITELLM_HOMEPAGE_CHAT_MODEL
+      api_key: os.environ/LITELLM_HOMEPAGE_CHAT_API_KEY
+
+litellm_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
+
+general_settings:
+  store_model_in_db: true
+  store_prompts_in_spend_logs: false
+
+router_settings:
+  enable_pre_call_checks: true

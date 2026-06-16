@@ -1,77 +1,175 @@
 # 3D Politics Manifesto Remixer
 
-> Reimagine governance through the voice of history's greatest political minds — powered by Claude.
+Public release for `remixer.3dpolitics.xyz`, with a backend-owned LLM gateway.
 
-## What it does
+## Review findings
 
-The **3D Politics Manifesto Remixer** takes Antoine Vergne's [3D Politics](https://www.linkedin.com/in/antoinevergne/) manifesto — a governance framework built on three pillars: **Decision-Making**, **Decentralization**, and **Distribution** — and rewrites it in the authentic voice of a chosen thinker.
+Before this refactor, the app was not safe for public release:
 
-Select one of six preset authors, or type any name into the custom card. Hit **Remix**. Watch the rewritten manifesto stream in real time.
+- The browser called Anthropic directly with `dangerouslyAllowBrowser: true`.
+- Visitors were asked to paste an API key client-side.
+- The app was hard-wired to a static GitHub Pages deployment, so there was no place to enforce quotas, rate limits, or abuse controls.
+- The frontend knew too much about the model path and prompting strategy.
 
-## Preset voices
+This version moves LLM access behind the backend and makes provider choice a server-side policy.
 
-| Author | Era | Style |
-|--------|-----|-------|
-| **Satoshi Nakamoto** | 2008 | Cryptographic precision, peer-to-peer metaphors, Bitcoin whitepaper tone |
-| **Montesquieu** | 1748 | Enlightenment reason, separation of powers, classical allusions |
-| **Theodor Adorno** | 1944–66 | Frankfurt School dialectics, negative critique, dense philosophical prose |
-| **Victor Hugo** | 1862 | Romantic lyricism, moral passion, sweeping social justice |
-| **Hannah Arendt** | 1958 | Public realm theory, plurality, political action, analytical rigor |
-| **Jean-Jacques Rousseau** | 1762 | General will, popular sovereignty, urgent democratic prose |
-| **✍ Your choice** | any era | Type any thinker — the prompt adapts dynamically |
+The next architectural step is documented in [docs/wordpress-vps-contract.md](/home/antoine-vergne/3d-politics-remixer/docs/wordpress-vps-contract.md): WordPress as frontend, VPS as reusable AI backend, and the remixer as one registered use case.
 
-## Getting started
+The LiteLLM-based VPS stack and reusable gateway scaffold are documented in [docs/vps-litellm-stack.md](/home/antoine-vergne/3d-politics-remixer/docs/vps-litellm-stack.md).
 
-### Prerequisites
+Full session handoff notes are in [docs/handoff-2026-05-11.md](/home/antoine-vergne/3d-politics-remixer/docs/handoff-2026-05-11.md).
 
-- [Node.js](https://nodejs.org/) 18+
-- An [Anthropic API key](https://console.anthropic.com/)
+## What changed
 
-### Run locally
+- `POST /api/remix` now proxies all LLM traffic through the backend.
+- The browser only sends `style_id` and optional `custom_author`.
+- The backend chooses the provider, model, prompt, temperature, and max output tokens.
+- Anonymous sessions are signed with an `HttpOnly` cookie.
+- Per-session and per-IP rate limits and daily quotas are enforced server-side.
+- Requests and abuse events are logged under `data/`.
+- The server can route to `anthropic`, `openai`, or `kimi` through one internal provider abstraction.
+- The app is prepared for `remixer.3dpolitics.xyz` behind Nginx or Docker.
+
+## Provider routing
+
+The backend should own provider choice. Do not let the frontend decide it.
+
+Recommended pattern:
+
+1. Each use case gets a backend policy.
+2. Each policy chooses `provider`, `model`, `maxOutputTokens`, and `temperature`.
+3. A single internal `callLlmProvider()` function dispatches to provider adapters.
+4. Future routes can reuse the same abstraction for other domain features.
+
+Current provider IDs:
+
+- `anthropic`
+- `openai`
+- `kimi`
+
+`openai` uses the OpenAI Responses API. Based on current OpenAI docs, Responses is the recommended API for new text generation projects. Source: [Responses API](https://platform.openai.com/docs/api-reference/responses/retrieve), [Text generation guide](https://platform.openai.com/docs/guides/text?api-mode=responses%5C)
+
+## Environment
+
+Copy `.env.example` to `.env` and set the values you need.
+
+Minimum required variables:
 
 ```bash
-git clone https://github.com/AntoineVergne/3d-politics-remixer.git
-cd 3d-politics-remixer
+APP_ORIGIN=https://remixer.3dpolitics.xyz
+SESSION_SECRET=replace-with-a-long-random-secret
+LLM_PROVIDER=anthropic
+LLM_MODEL=your-model-id
+ANTHROPIC_API_KEY=...
+```
+
+Example OpenAI setup:
+
+```bash
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-5.2
+OPENAI_API_KEY=...
+OPENAI_BASE_URL=https://api.openai.com/v1
+```
+
+Example Kimi setup:
+
+```bash
+LLM_PROVIDER=kimi
+LLM_MODEL=your-kimi-model
+KIMI_API_KEY=...
+KIMI_BASE_URL=https://api.moonshot.ai/v1
+```
+
+For route-specific overrides, use:
+
+```bash
+REMIX_PROVIDER=anthropic
+REMIX_MODEL=your-remix-model
+REMIX_MAX_OUTPUT_TOKENS=1200
+REMIX_TEMPERATURE=0.8
+```
+
+## Local development
+
+Install dependencies:
+
+```bash
 npm install
+```
+
+Run the API server:
+
+```bash
+npm run api
+```
+
+Run the frontend in another terminal:
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173), paste your Anthropic API key in the header, pick a voice, and remix.
+The Vite dev server proxies `/api/*` to `http://127.0.0.1:3000`.
 
-### Build for production
+## Production build
+
+Build the frontend:
 
 ```bash
 npm run build
-npm run preview
 ```
 
-## How it works
+Start the production server:
 
-1. The core 3D Politics manifesto (Executive Summary + four pillars + Virtuous Cycle) is embedded in the app.
-2. Each author card carries a detailed system prompt crafted to capture that thinker's authentic voice, sentence structures, and key concepts.
-3. On **Remix**, the app calls `claude-opus-4-7` via the [Anthropic SDK](https://github.com/anthropic-ai/anthropic-sdk-typescript) directly from the browser (`dangerouslyAllowBrowser: true`).
-4. The response streams token by token into the output panel.
+```bash
+npm start
+```
 
-> **Note on the API key**: your key is stored only in memory (React state) and never sent anywhere except directly to `api.anthropic.com`. It is not logged or persisted.
+The Node server will:
 
-## Tech stack
+- serve the built frontend from `dist/`
+- expose `GET /api/health`
+- expose `POST /api/remix`
+- apply security headers on API responses
+- append usage and abuse logs under `data/`
 
-- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Vite 6](https://vitejs.dev/)
-- [Tailwind CSS v4](https://tailwindcss.com/)
-- [@anthropic-ai/sdk](https://github.com/anthropic-ai/anthropic-sdk-typescript)
-- [Lucide React](https://lucide.dev/)
+## Deployment on `remixer.3dpolitics.xyz`
 
-## About 3D Politics
+### Option 1: Nginx + Node
 
-3D Politics is a governance framework developed by **Antoine Vergne** from 20 years of professional practice in deliberative democracy and civic innovation. It proposes three interconnected pillars:
+1. Build the app with `npm run build`
+2. Start the server with `npm start`
+3. Reverse proxy the subdomain to `127.0.0.1:3000`
 
-- **Decision-Making** — modular, scalable democratic processes (citizens' assemblies, Decision Lego, AI-assisted deliberation)
-- **Decentralization** — distributed agency across society (DeSci, Web3 governance, energy citizens)
-- **Distribution** — equitable ownership of value (SAWA currency, UBI Triad, Exit to Community)
+An example Nginx site file is included at [deploy/nginx/remixer.3dpolitics.xyz.conf.example](/home/antoine-vergne/3d-politics-remixer/deploy/nginx/remixer.3dpolitics.xyz.conf.example).
 
-Together they form a virtuous cycle toward a governance system that is technologically advanced, democratically scaled, and economically fair.
+### Option 2: Docker
 
----
+Build the image:
 
-Built with [Claude](https://claude.ai) · Deployed on [GitHub Pages](https://antoinevergne.github.io/3d-politics-remixer/)
+```bash
+docker build -t 3d-politics-remixer .
+```
+
+Run it:
+
+```bash
+docker run --env-file .env -p 3000:3000 3d-politics-remixer
+```
+
+## Security notes
+
+- Never expose provider keys to the browser.
+- Keep prompts and model routing on the server.
+- Use a long random `SESSION_SECRET`.
+- Run behind HTTPS in production.
+- Set provider-side budget caps in the provider dashboard.
+- If traffic grows, replace the in-process rate store with Redis and the file logs with a database.
+
+## Next hardening steps
+
+- Move daily quotas and rate limits from local file/in-memory storage to Redis/Postgres.
+- Add CAPTCHA or Turnstile for suspicious or anonymous traffic.
+- Add authenticated tiers if you want more than a tiny anonymous quota.
+- Add a generic `/api/llm/*` gateway layer for future bots and assistants on `3dpolitics.xyz`.

@@ -1,59 +1,41 @@
 # 3D Politics Manifesto Remixer
 
-Public release for `remixer.3dpolitics.xyz`, with a backend-owned LLM gateway.
+A small web app that rewrites the [3D Politics manifesto](https://3dpolitics.xyz/manifesto/) in the voice of a chosen thinker.
 
-## Review findings
+Live at **https://remixer.3dpolitics.xyz**
 
-Before this refactor, the app was not safe for public release:
+## What it does
 
-- The browser called Anthropic directly with `dangerouslyAllowBrowser: true`.
-- Visitors were asked to paste an API key client-side.
-- The app was hard-wired to a static GitHub Pages deployment, so there was no place to enforce quotas, rate limits, or abuse controls.
-- The frontend knew too much about the model path and prompting strategy.
+- Pick one of the preset authors or enter a custom name.
+- The browser sends only the selection to the backend.
+- The backend handles the LLM provider, model, prompt, and rate limits.
+- The rewritten manifesto appears inline, ready to copy.
 
-This version moves LLM access behind the backend and makes provider choice a server-side policy.
+## Architecture
 
-The next architectural step is documented in [docs/wordpress-vps-contract.md](/home/antoine-vergne/3d-politics-remixer/docs/wordpress-vps-contract.md): WordPress as frontend, VPS as reusable AI backend, and the remixer as one registered use case.
+The app is a React frontend served by a small Node.js backend.
 
-The LiteLLM-based VPS stack and reusable gateway scaffold are documented in [docs/vps-litellm-stack.md](/home/antoine-vergne/3d-politics-remixer/docs/vps-litellm-stack.md).
+- `src/` — React + Tailwind frontend
+- `server.mjs` — API server, rate limits, session handling, LLM provider adapters
+- `shared/style-catalog.json` — preset authors exposed to the frontend
+- `infra/` — optional Docker + LiteLLM proxy stack for VPS deployments
 
-Full session handoff notes are in [docs/handoff-2026-05-11.md](/home/antoine-vergne/3d-politics-remixer/docs/handoff-2026-05-11.md).
+The backend never exposes provider API keys to the browser.
 
-## What changed
+## Preset authors
 
-- `POST /api/remix` now proxies all LLM traffic through the backend.
-- The browser only sends `style_id` and optional `custom_author`.
-- The backend chooses the provider, model, prompt, temperature, and max output tokens.
-- Anonymous sessions are signed with an `HttpOnly` cookie.
-- Per-session and per-IP rate limits and daily quotas are enforced server-side.
-- Requests and abuse events are logged under `data/`.
-- The server can route to `anthropic`, `openai`, or `kimi` through one internal provider abstraction.
-- The app is prepared for `remixer.3dpolitics.xyz` behind Nginx or Docker.
-
-## Provider routing
-
-The backend should own provider choice. Do not let the frontend decide it.
-
-Recommended pattern:
-
-1. Each use case gets a backend policy.
-2. Each policy chooses `provider`, `model`, `maxOutputTokens`, and `temperature`.
-3. A single internal `callLlmProvider()` function dispatches to provider adapters.
-4. Future routes can reuse the same abstraction for other domain features.
-
-Current provider IDs:
-
-- `anthropic`
-- `openai`
-- `kimi`
-
-`openai` uses the OpenAI Responses API. Based on current OpenAI docs, Responses is the recommended API for new text generation projects. Source: [Responses API](https://platform.openai.com/docs/api-reference/responses/retrieve), [Text generation guide](https://platform.openai.com/docs/guides/text?api-mode=responses%5C)
+- Hannah Arendt
+- Satoshi Nakamoto
+- Olympe de Gouges
+- Jean-Jacques Rousseau
+- Aristotle
+- Ursula K. Le Guin
+- Douglas Adams
+- Aleatoria Fortunensis (dada / random-order remix)
 
 ## Environment
 
-Copy `.env.example` to `.env` and set the values you need.
-
-Minimum required variables:
+Copy `.env.example` to `.env` and set at least:
 
 ```bash
 APP_ORIGIN=https://remixer.3dpolitics.xyz
@@ -63,25 +45,7 @@ LLM_MODEL=your-model-id
 ANTHROPIC_API_KEY=...
 ```
 
-Example OpenAI setup:
-
-```bash
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-5.2
-OPENAI_API_KEY=...
-OPENAI_BASE_URL=https://api.openai.com/v1
-```
-
-Example Kimi setup:
-
-```bash
-LLM_PROVIDER=kimi
-LLM_MODEL=your-kimi-model
-KIMI_API_KEY=...
-KIMI_BASE_URL=https://api.moonshot.ai/v1
-```
-
-For route-specific overrides, use:
+For route-specific overrides:
 
 ```bash
 REMIX_PROVIDER=anthropic
@@ -90,86 +54,36 @@ REMIX_MAX_OUTPUT_TOKENS=1200
 REMIX_TEMPERATURE=0.8
 ```
 
-## Local development
+To route through a LiteLLM proxy instead of a provider directly, set `LLM_PROVIDER=openai` and point `OPENAI_BASE_URL` at your LiteLLM instance.
 
-Install dependencies:
+## Development
 
 ```bash
 npm install
+npm run api      # backend on http://127.0.0.1:3000
+npm run dev      # frontend on http://127.0.0.1:5173 (proxies /api/*)
 ```
 
-Run the API server:
-
-```bash
-npm run api
-```
-
-Run the frontend in another terminal:
-
-```bash
-npm run dev
-```
-
-The Vite dev server proxies `/api/*` to `http://127.0.0.1:3000`.
-
-## Production build
-
-Build the frontend:
+## Production
 
 ```bash
 npm run build
-```
-
-Start the production server:
-
-```bash
 npm start
 ```
 
-The Node server will:
+The server serves the built frontend from `dist/` and exposes `POST /api/remix`.
 
-- serve the built frontend from `dist/`
-- expose `GET /api/health`
-- expose `POST /api/remix`
-- apply security headers on API responses
-- append usage and abuse logs under `data/`
+## LiteLLM stack (optional)
 
-## Deployment on `remixer.3dpolitics.xyz`
-
-### Option 1: Nginx + Node
-
-1. Build the app with `npm run build`
-2. Start the server with `npm start`
-3. Reverse proxy the subdomain to `127.0.0.1:3000`
-
-An example Nginx site file is included at [deploy/nginx/remixer.3dpolitics.xyz.conf.example](/home/antoine-vergne/3d-politics-remixer/deploy/nginx/remixer.3dpolitics.xyz.conf.example).
-
-### Option 2: Docker
-
-Build the image:
-
-```bash
-docker build -t 3d-politics-remixer .
-```
-
-Run it:
-
-```bash
-docker run --env-file .env -p 3000:3000 3d-politics-remixer
-```
+For a shared VPS setup where WordPress stays the frontend, see [docs/vps-litellm-stack.md](docs/vps-litellm-stack.md).
 
 ## Security notes
 
-- Never expose provider keys to the browser.
-- Keep prompts and model routing on the server.
-- Use a long random `SESSION_SECRET`.
-- Run behind HTTPS in production.
-- Set provider-side budget caps in the provider dashboard.
-- If traffic grows, replace the in-process rate store with Redis and the file logs with a database.
+- Keep provider keys and prompts server-side.
+- Use a strong `SESSION_SECRET`.
+- Run behind HTTPS.
+- Set budget caps in the provider dashboard.
 
-## Next hardening steps
+## License
 
-- Move daily quotas and rate limits from local file/in-memory storage to Redis/Postgres.
-- Add CAPTCHA or Turnstile for suspicious or anonymous traffic.
-- Add authenticated tiers if you want more than a tiny anonymous quota.
-- Add a generic `/api/llm/*` gateway layer for future bots and assistants on `3dpolitics.xyz`.
+Proprietary — 3D Politics by Antoine Vergne.

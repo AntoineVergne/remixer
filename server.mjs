@@ -12,88 +12,104 @@ const COUNTERS_FILE = path.join(DATA_DIR, "usage-counters.json");
 const USAGE_LOG_FILE = path.join(DATA_DIR, "usage-events.ndjson");
 const ABUSE_LOG_FILE = path.join(DATA_DIR, "abuse-events.ndjson");
 
-const MANIFESTO_CORE = `3D Politics: Exploring Governance for the 21st Century
+const MANIFESTO_CORE = `3D Politics Manifesto
 
-EXECUTIVE SUMMARY
+THESIS
 
-Today I start a series of publications which is designed to move the discourse from "diagnosis despair" to "architectural agency" by applying the 3D Politics framework (Decision-Making, Decentralization, Distribution). With this approach, I intend to publish around 10 key essays inspired by my professional practice over the past 20 years.
+Governance is a living organism rather than an ossified structure. We must move beyond diagnosing systemic failure toward a complex, 3D design that treats decision-making, decentralization, and distribution as self-regulatory pieces of a single, evolving body.
 
-WHAT IS 3D POLITICS
+ESSAY
 
-3D Politics is a multidimensional governance framework designed to move civic discourse from "diagnosis despair"—the endless analysis of why current systems are failing—to "architectural agency"—the active design and implementation of new, functional structures. It posits that for any governance system to be resilient and legitimate in the age of AI and global complexity, it must balance three interconnected pillars: Decision-Making, Decentralization, and Distribution. Together, these pillars form a "virtuous cycle" where collective intelligence, distributed agency, and equitable ownership reinforce one another.
+3D Politics is a multidimensional governance framework designed to move civic discourse from "diagnosis despair" — the endless analysis of why current systems are failing or will fail — to "architectural agency": the active design and implementation of new, functional structures. 3D Politics posits that for any governance system to be resilient and legitimate in the future, it must rest on three interconnected pillars: Decision-Making, Decentralization, and Distribution. Together, these pillars form a virtuous cycle where collective intelligence, distributed agency, and equitable ownership reinforce one another.
 
 DECISION-MAKING: THE PILLAR OF LEGITIMACY
 
-The first dimension focuses on how we arrive at collective choices. Traditional decision making processes are mostly inherited from the 19th or 20th Century and not up to the task to handle modern challenges. 3D Politics replaces these with a "modular grammar" of governance—the Decision Lego. By using tools like citizens' assemblies and scaling frameworks, we can harness collective intelligence at scale. This pillar emphasizes the "Politics of Presence," recognizing that trust is built through embodied, face-to-face deliberation, even as we use AI to aggregate recommendations and ensure that the voices of "silent stakeholders"—such as future generations and ecosystems—are represented in the room.
+The first dimension focuses on how we arrive at collective choices. Traditional decision-making processes are mostly inherited from the 19th or 20th century and are not up to the task of handling modern challenges. At every scale — from city councils to international bodies, from corporate boards to digital platforms — the institutions through which human communities govern themselves were designed for a world that no longer exists. They were built for slower information flows, bounded territorial jurisdictions, relatively stable social contracts, and challenges whose complexity was manageable by a small class of trained professionals. None of those conditions holds today.
+
+3D Politics replaces these with a "modular grammar" of governance — the Decision Lego, which will be the first essay of the series. It will be followed by texts on the architecture of decision-making in the proper sense, on deliberation, democratic innovation, scaling, more-than-human politics, the politics of presence, and the idea of a clearing house for citizens' recommendations. Future essays will also address governing citizens' assemblies, governing synthetic intelligence, and democratic resilience.
 
 DECENTRALIZATION: THE PILLAR OF AGENCY
 
-The second dimension addresses the balance of power. Decentralization is not merely a technical goal but a political, societal and economic win-win situation. In the 3D framework, decentralization ensures that agency is distributed across society. This extends from Decentralized Science, which breaks knowledge out of ivory towers, to web3 governance and the Energy Transition, where passive consumers become active "energy citizens". Decentralization is making the system anti-fragile.
+The second dimension addresses the balance of power. Decentralization is not merely a technical goal (as seen in Web3) but a political, societal, and economic win-win. In the 3D Politics framework, decentralization ensures that agency is distributed across society. This extends from Decentralized Science, which breaks knowledge out of ivory towers, to Web3 governance and the energy transition, where passive consumers become active "energy citizens". Decentralization makes the system anti-fragile and has the potential to displace power and scarcity.
 
 DISTRIBUTION: THE PILLAR OF OWNERSHIP
 
-The third dimension, Distribution, ensures that the value created by a society is shared in a fair way. Without equitable distribution, governance systems lose the trust of their participants. 3D Politics proposes structural interventions like SAWA (a capability-anchored currency) and the UBI Triad, which couples income with decentralized identity and deliberative power. A key concept here is Exit to Community (E2C), which facilitates the transition of private companies and automated infrastructure into community-led steward-ownership. By embedding equity at the point of value creation, the framework ensures that economic surplus funds the very democratic processes that govern it.
+The third dimension tackles the question of the value created by a society. 3D Politics proposes structural interventions like SAWA (a capability-anchored currency) and the UBI Triad, which couples income with decentralized identity and deliberative power. A key concept here is Exit to Community (E2C), which facilitates the transition of private companies and automated infrastructure (like robotics in the DeToRo model) into community-led steward-ownership. By embedding equity at the point of value creation, the framework ensures that economic surplus funds the very democratic processes that govern it.
 
 THE VIRTUOUS CYCLE
 
-The ultimate goal of 3D Politics is a synthesis where these three dimensions operate as a single metabolism. Better Decision-Making leads to fairer Distribution, which increases the trust and resources available for the community. These resources enable further Decentralization, which in turn empowers more people to participate in Decision-Making. This synthesis is physically modeled in concepts like Syntropolis, a blueprint for an integrated 3D polity that acts as a living laboratory for a civilization that is technologically advanced, democratically scaled, and economically fair. 3D Politics is not a static utopia, but a living architectural log for reclaiming the future of governance.`;
+The ultimate goal of 3D Politics is a synthesis where these three dimensions operate as a single metabolism. Better collective Decision-Making produces outcomes that people trust and experience as legitimate. Legitimate outcomes build the social capital — the trust, the willingness to contribute, the sense of shared fate — that makes genuine Distribution possible. Equitable Distribution, in turn, creates the material conditions for wider participation: people who are not consumed by insecurity have the time, energy, and motivation to engage in collective governance. And broader, more meaningful participation — rooted in decentralized power structures — elevates the quality of collective Decision-Making. Each turn of the cycle produces a more resilient, more inclusive, more adaptive polity.
+
+Better decisions enable fairer distribution. Fairer distribution enables wider participation. Wider participation enables better decisions.
+
+The converse is equally true. Degraded decision-making produces outcomes that serve narrow interests, eroding the legitimacy of redistribution. Skewed distribution concentrates both resources and voice, degrading the quality of collective reasoning. And the absence of genuine agency — of real decentralized power — transforms participation into theater, further eroding trust. This is the vicious cycle that characterizes many contemporary governance crises. Breaking it requires intervening in all three dimensions simultaneously.
+
+3D Politics is not a static utopia, but a living architectural log for reclaiming the future of governance.`;
 
 const PRESET_PROMPTS = {
-  satoshi: `You are Satoshi Nakamoto, the pseudonymous creator of Bitcoin, writing in the precise, methodical style of the Bitcoin whitepaper (2008). Transform this governance manifesto into your voice:
-
-- Use the terse, engineering-manual prose of the whitepaper
-- Frame governance problems as Byzantine fault-tolerance and consensus problems
-- Replace political concepts with distributed systems metaphors: nodes, chains, proof-of-work, merkle trees, hash functions
-- Structure arguments with numbered sections and sub-sections
-- Introduce formal definitions before using concepts
-- Reference game theory, cryptographic proofs, and incentive structures
-- Be revolutionary but detached; let the technical elegance speak
-- End with a quiet confidence that the system described is simply inevitable`,
-  montesquieu: `You are Charles-Louis de Secondat, Baron de Montesquieu, author of "The Spirit of Laws" (1748). Transform this governance manifesto into your voice:
-
-- Use elegant, measured Enlightenment prose with classical allusions
-- Examine governance through the lens of climate, national character, and the nature of different peoples
-- Apply your doctrine of the separation of powers to each dimension
-- Draw comparisons between republics, monarchies, and despotisms of antiquity
-- Reference Lycurgus, Solon, the Roman Republic, and English constitutional arrangements
-- Be philosophical and analytical, never polemical
-- Structure observations as general laws derived from particular cases`,
-  adorno: `You are Theodor W. Adorno, Frankfurt School critical theorist and author of "Negative Dialectics" and "Dialectic of Enlightenment." Transform this governance manifesto into your voice:
-
-- Use dense, deliberately difficult dialectical prose and resist easy synthesis
-- Deploy negative dialectics: expose the contradictions within every affirmative claim
-- Critique how the culture industry and administered society co-opt democratic language
-- Question whether the framework's own categories reproduce the domination they oppose
-- Use concepts like reification, instrumental reason, non-identity, the administered world
-- Be suspicious of any system that presents itself as coherent and complete
-- Refuse consoling conclusions; the strength of the analysis lies in naming the impasse`,
-  hugo: `You are Victor Hugo, author of "Les Miserables" and "Notre-Dame de Paris," writing at the height of your powers. Transform this governance manifesto into your voice:
-
-- Use sweeping, lyrical, passionate prose; you are addressing all of humanity
-- Employ dramatic contrasts: light and shadow, the people and the powerful, justice and tyranny
-- Use rhetorical questions and exclamations freely
-- Build to crescendos of moral conviction
-- Invoke history, the French Revolution, the barricades, and the long march of progress
-- Personify abstract forces: Liberty speaks, the People rise, the Future knocks
-- Write as if each sentence must justify itself before the tribunal of conscience`,
-  arendt: `You are Hannah Arendt, political philosopher and author of "The Human Condition" and "The Origins of Totalitarianism." Transform this governance manifesto into your voice:
+  arendt: `You are Hannah Arendt, political philosopher and author of "The Human Condition" and "The Origins of Totalitarianism." Transform this political manifesto into your authentic voice:
 
 - Use precise, careful, philosophically rigorous prose
 - Draw on your key distinctions: labor/work/action; private/social/public realms; process/event
-- Center the concept of plurality; we are all different, and politics is what happens between us
+- Center plurality; politics is what happens between different people in a shared world
 - Invoke natality: the capacity of humans to begin something genuinely new
-- Warn of the dangers when the political is dissolved into the social or economic
-- Be historically grounded; reference the Greek polis, the American founding, and council systems
-- Express deep concern about the loss of the public realm and the rise of mass society`,
-  rousseau: `You are Jean-Jacques Rousseau, philosopher and author of "The Social Contract" and "Discourse on the Origin of Inequality." Transform this governance manifesto into your voice:
+- Warn against dissolving the political into the social or economic
+- Reference the Greek polis, the American founding, and council systems where fitting
+- Express deep concern about the loss of the public realm`,
+  satoshi: `You are Satoshi Nakamoto, the pseudonymous creator of Bitcoin, writing in the precise, methodical style of the Bitcoin whitepaper (2008). Transform this governance manifesto into your voice:
+
+- Use terse, engineering-manual prose
+- Frame governance as Byzantine fault-tolerance and consensus problems
+- Replace political concepts with distributed systems metaphors: nodes, chains, proof-of-work, merkle trees, hash functions
+- Structure arguments with numbered sections and formal definitions
+- Reference game theory, cryptographic proofs, and incentive structures
+- Be revolutionary but detached; let technical elegance speak
+- End with quiet confidence that the system is inevitable`,
+  gouges: `You are Olympe de Gouges, author of the "Declaration of the Rights of Woman and the Female Citizen" (1791). Transform this manifesto into your voice:
+
+- Write with the declarative, uncompromising tone of a revolutionary pamphlet
+- Address women, citizens, and the people as equals before the law
+- Demand that liberty, equality, and sovereignty apply to all, not just the privileged
+- Use the form of articles or propositions when natural
+- Be morally urgent, courageous, and unafraid to name hypocrisy`,
+  rousseau: `You are Jean-Jacques Rousseau, philosopher and author of "The Social Contract" and "Discourse on the Origin of Inequality." Transform this manifesto into your voice:
 
 - Write with direct, urgent, morally charged prose; you speak to and for the people
 - Invoke the general will as the only legitimate basis of governance
 - Condemn how civilization, property, and representation corrupt natural human goodness
-- Insist that sovereignty is inalienable and cannot be delegated; the people must govern themselves
+- Insist that sovereignty is inalienable and cannot be delegated
 - Use "the people," "the citizen," and "the social pact" as central terms
-- Be emotionally engaged and passionate; this is not an academic exercise but a moral urgency
-- Attack all existing authorities and inherited corruptions with righteous indignation`
+- Be emotionally engaged and passionate`,
+  aristotle: `You are Aristotle, philosopher and tutor of Alexander, author of the "Politics" and "Nicomachean Ethics." Transform this manifesto into your voice:
+
+- Use measured, analytical classical prose
+- Begin from definitions and move toward the telos of the good polis
+- Distinguish between correct and deviant constitutions where relevant
+- Ask what kind of life and citizens the proposed institutions will produce
+- Ground claims in phronesis, habituation, and the common good
+- Avoid modern jargon; speak of virtue, citizenship, and the city`,
+  leguin: `You are Ursula K. Le Guin, novelist and essayist, author of "The Dispossessed" and "The Left Hand of Darkness." Transform this manifesto into your voice:
+
+- Use clear, humane, quietly radical prose
+- Draw on anthropology and speculative imagination
+- Question power, ownership, and the unexamined assumptions of your own society
+- Prefer concrete images and social relationships to abstractions
+- Be skeptical of utopia yet hopeful about imperfect, ongoing change
+- Include a brief parable or concrete scene if it comes naturally`,
+  adams: `You are Douglas Adams, author of "The Hitchhiker's Guide to the Galaxy." Transform this manifesto into your voice:
+
+- Use witty, deadpan, absurdist prose
+- Treat grand political claims with gentle cosmic irony
+- Include a fictional guidebook entry, an improbability statistic, or a bureaucratic absurdity
+- Make the reader laugh while still conveying the underlying ideas
+- Never be cruel; the absurdity is directed at systems, not people`,
+  aleatoria: `You are Aleatoria Fortunensis, a dadaist cut-up poet obsessed with chance operations. Transform this manifesto into your voice:
+
+- Break the text into fragments, slogans, and found phrases
+- Use collage, repetition, nonsense words, and typographic surprises
+- Undermine logical order; embrace contradiction and surprise juxtapositions
+- Treat every sentence as a ticket drawn from a hat
+- Preserve the original words as raw material, but reassemble them through chance`
 };
 
 const policy = {

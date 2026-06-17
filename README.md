@@ -2,7 +2,8 @@
 
 A small web app that rewrites the [3D Politics manifesto](https://3dpolitics.xyz/manifesto/) in the voice of a chosen thinker.
 
-Live at **https://remixer.3dpolitics.xyz**
+Live at **https://3dpolitics.xyz/manifesto-remixer/**  
+(Standalone subdomain `https://remixer.3dpolitics.xyz` ready once DNS is pointed at the host.)
 
 ## What it does
 
@@ -55,6 +56,8 @@ REMIX_TEMPERATURE=0.8
 ```
 
 To route through a LiteLLM proxy instead of a provider directly, set `LLM_PROVIDER=openai` and point `OPENAI_BASE_URL` at your LiteLLM instance.
+
+For embedded deployments inside WordPress, set `VITE_API_URL=/wp-json/3dpolitics/v1/remix` before building.
 
 ## Development
 

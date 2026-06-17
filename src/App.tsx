@@ -170,7 +170,8 @@ export default function App() {
     setRemixedText("");
 
     try {
-      const response = await fetch("/api/remix", {
+      const apiUrl = import.meta.env.VITE_API_URL || "/api/remix";
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

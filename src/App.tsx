@@ -200,29 +200,45 @@ export default function App() {
     setError(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "/api/remix";
-      const response = await fetch(apiUrl, {
+      const gatewayUrl = import.meta.env.VITE_GATEWAY_URL || "https://api.3dpolitics.xyz/ai/v1";
+
+      const tokenRes = await fetch(`${gatewayUrl}/token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        body: JSON.stringify({ use_cases: ["remixer_manifesto"] }),
+      });
+      const tokenPayload = (await tokenRes.json()) as { token?: string; message?: string };
+      if (!tokenRes.ok || !tokenPayload.token) {
+        throw new Error(tokenPayload.message ?? "Could not get a request token.");
+      }
+
+      const response = await fetch(`${gatewayUrl}/execute`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenPayload.token}`,
+        },
         body: JSON.stringify({
-          style_id: selectedStyle,
-          custom_author:
-            selectedStyle === "custom" ? customAuthor.trim() : undefined,
+          use_case: "remixer_manifesto",
+          input: {
+            style_id: selectedStyle,
+            custom_author:
+              selectedStyle === "custom" ? customAuthor.trim() : undefined,
+          },
         }),
       });
 
       const payload = (await response.json()) as {
-        reply?: string;
+        output?: { text?: string };
         message?: string;
         limits?: { remaining_today?: number };
       };
 
-      if (!response.ok || !payload.reply) {
+      if (!response.ok || !payload.output?.text) {
         throw new Error(payload.message ?? "The remix request failed.");
       }
 
-      let text = payload.reply.trim();
+      let text = payload.output.text.trim();
       if (selectedStyle === "aleatoria") {
         text = applyAleatoria(text);
       }

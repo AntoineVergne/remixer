@@ -142,24 +142,43 @@ function formatRemix(text: string) {
     if (!line.trim()) {
       return <div key={index} className="h-4" />;
     }
-    const isHeading =
-      Boolean(line.match(/^[A-Z][A-Z\s:,.-]{4,}$/)) ||
-      line.startsWith("# ") ||
-      line.startsWith("## ") ||
-      line.startsWith("### ");
     const cleanLine = line.replace(/^#{1,3}\s+/, "");
-    if (isHeading) {
+
+    if (line.startsWith("# ")) {
+      return (
+        <h2
+          key={index}
+          className="font-display mt-8 mb-4 text-base font-black uppercase tracking-widest text-[var(--accent)]"
+        >
+          {cleanLine}
+        </h2>
+      );
+    }
+
+    if (line.startsWith("## ")) {
       return (
         <h3
           key={index}
-          className="font-display mt-6 mb-2 text-sm font-black uppercase tracking-widest text-[var(--accent)]"
+          className="font-display mt-7 mb-3 text-sm font-black uppercase tracking-widest text-[var(--accent)]"
         >
           {cleanLine}
         </h3>
       );
     }
+
+    if (line.startsWith("### ") || Boolean(line.match(/^[A-Z][A-Z\s:,.-]{4,}$/))) {
+      return (
+        <h4
+          key={index}
+          className="font-display mt-6 mb-3 text-xs font-black uppercase tracking-widest text-[var(--fg)]"
+        >
+          {cleanLine}
+        </h4>
+      );
+    }
+
     return (
-      <p key={index} className="mb-0 text-sm leading-relaxed text-[var(--fg)]">
+      <p key={index} className="mb-3 text-sm leading-relaxed text-[var(--fg)]">
         {line}
       </p>
     );
@@ -422,7 +441,7 @@ export default function App() {
 
             <div className="min-h-[320px] max-h-[70vh] overflow-y-auto px-6 py-6">
               {activeOutput ? (
-                <div className="prose prose-sm max-w-none">
+                <div className="max-w-none">
                   {formatRemix(activeOutput.text)}
                 </div>
               ) : (

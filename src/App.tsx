@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, Copy, Loader2, Pen, Shield, Sparkles } from "lucide-react";
+import { ArrowLeft, Check, Copy, Loader2, Pen, Shield, Sparkles } from "lucide-react";
 import styleCatalog from "../shared/style-catalog.json";
 
 type Style = (typeof styleCatalog)[number];
@@ -289,9 +289,18 @@ export default function App() {
               Manifesto Remixer
             </p>
           </div>
-          <div className="hidden items-center gap-2 border border-[var(--border)]/20 bg-[var(--surface)] px-3 py-2 font-mono text-xs text-[var(--muted)] md:flex">
-            <Shield className="h-3.5 w-3.5" />
-            Provider, prompt, and credentials stay server-side
+          <div className="flex items-center gap-3">
+            <a
+              href="https://3dpolitics.xyz/manifesto/"
+              className="flex items-center gap-1.5 border border-[var(--border)]/20 bg-[var(--surface)] px-3 py-2 font-mono text-xs text-[var(--muted)] transition-colors hover:border-[var(--fg)] hover:text-[var(--fg)]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back to manifesto
+            </a>
+            <div className="hidden items-center gap-2 border border-[var(--border)]/20 bg-[var(--surface)] px-3 py-2 font-mono text-xs text-[var(--muted)] md:flex">
+              <Shield className="h-3.5 w-3.5" />
+              Provider, prompt, and credentials stay server-side
+            </div>
           </div>
         </div>
       </header>
@@ -317,13 +326,13 @@ export default function App() {
           </p>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <div className="grid gap-6 lg:grid-cols-[1fr_1.25fr_0.95fr] lg:items-start">
           {/* Left: author selection */}
           <section>
             <h3 className="font-display mb-3 text-xs font-black uppercase tracking-widest text-[var(--muted)]">
               Choose a voice
             </h3>
-            <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">
+            <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-2">
               {styleCatalog.map((style) => (
                 <StyleCard
                   key={style.id}
@@ -370,7 +379,7 @@ export default function App() {
             )}
           </section>
 
-          {/* Right: output pane */}
+          {/* Middle: output pane */}
           <section className="border border-[var(--border)] bg-[var(--surface)]">
             <div className="flex items-center justify-between border-b border-[var(--border)]/10 px-5 py-3">
               <div>
@@ -426,35 +435,86 @@ export default function App() {
               )}
             </div>
           </section>
-        </div>
 
-        {/* History strip */}
-        {outputs.length > 1 && (
-          <section className="mt-6">
-            <h3 className="font-display mb-2 text-xs font-black uppercase tracking-widest text-[var(--muted)]">
-              Previous remixes
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {outputs.map((output) => (
-                <button
-                  key={output.id}
-                  onClick={() => setActiveOutputId(output.id)}
-                  className={`border px-3 py-2 text-left text-xs transition-colors ${
-                    activeOutputId === output.id ||
-                    (activeOutputId === null && output.id === outputs[0].id)
-                      ? "border-[var(--accent)] bg-[var(--accent)]/10 text-[var(--accent)]"
-                      : "border-[var(--border)]/20 bg-[var(--surface)] text-[var(--muted)] hover:border-[var(--border)]/60"
-                  }`}
-                >
-                  <span className="font-display font-bold">{output.styleName}</span>
-                  <span className="block font-mono text-[9px] opacity-70">
-                    {output.descriptor}
-                  </span>
-                </button>
-              ))}
+          {/* Right: past remixes pane */}
+          <section className="flex flex-col border border-[var(--border)] bg-[var(--surface)]">
+            <div className="border-b border-[var(--border)]/10 px-5 py-3">
+              <h3 className="font-display text-sm font-black uppercase tracking-widest text-[var(--fg)]">
+                Past remixes
+              </h3>
+              <p className="font-mono text-[10px] text-[var(--muted)]">
+                {outputs.length > 0
+                  ? `${outputs.length} saved — click to read, copy to paste`
+                  : "Saved remixes will appear here"}
+              </p>
+            </div>
+
+            <div className="max-h-[70vh] flex-1 overflow-y-auto">
+              {outputs.length === 0 ? (
+                <div className="flex h-48 flex-col items-center justify-center px-6 text-center">
+                  <Sparkles className="mb-2 h-6 w-6 text-[var(--border)]/40" />
+                  <p className="font-mono text-xs text-[var(--muted)]">
+                    Your previous remixes will be listed here.
+                  </p>
+                </div>
+              ) : (
+                <ul className="divide-y divide-[var(--border)]/10">
+                  {outputs.map((output) => {
+                    const isActive =
+                      activeOutputId === output.id ||
+                      (activeOutputId === null && output.id === outputs[0].id);
+                    return (
+                      <li
+                        key={output.id}
+                        onClick={() => setActiveOutputId(output.id)}
+                        className={`cursor-pointer p-4 transition-colors ${
+                          isActive
+                            ? "bg-[var(--accent)]/5"
+                            : "hover:bg-[var(--bg)]"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <h4
+                              className={`font-display truncate text-xs font-bold ${
+                                isActive ? "text-[var(--accent)]" : "text-[var(--fg)]"
+                              }`}
+                            >
+                              {output.styleName}
+                            </h4>
+                            <p className="font-mono text-[9px] text-[var(--muted)]">
+                              {output.descriptor}
+                            </p>
+                            <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-[var(--muted)]">
+                              {output.text}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleCopy(output.text, output.id);
+                            }}
+                            className="flex shrink-0 items-center gap-1 border border-[var(--border)]/20 px-2 py-1 font-mono text-[10px] text-[var(--muted)] transition-colors hover:border-[var(--fg)] hover:text-[var(--fg)]"
+                            title="Copy this remix"
+                          >
+                            {copiedId === output.id ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Copy className="h-3 w-3" />
+                            )}
+                            <span className="hidden sm:inline">
+                              {copiedId === output.id ? "Copied" : "Copy"}
+                            </span>
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
           </section>
-        )}
+        </div>
       </main>
 
       <footer className="mt-10 border-t border-[var(--border)] px-6 py-5">

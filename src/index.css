@@ -1,10 +1,15 @@
-@import 'tailwindcss';
+/* Tailwind utilities are marked important so they win over the 3dpolitics-theme
+   unlayered * { margin:0; padding:0 } reset. */
+@import 'tailwindcss' important;
 
 @plugin 'tailwindcss-animate';
 
-@custom-variant dark (&:is(.dark *));
-
 @theme {
+  --spacing: 0.25rem;
+  --container-2xl: 42rem;
+  --container-4xl: 56rem;
+  --container-6xl: 72rem;
+
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -129,6 +134,14 @@
     --font-display: 'Helvetica Neue', 'Helvetica Now', 'Neue Haas Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     --font-body: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
   }
+}
+
+/* Restore margin/padding control to Tailwind utilities inside the remixer app.
+   The 3dpolitics-theme uses an unlayered * { margin:0; padding:0 } reset, which
+   defeats layered Tailwind v4 utilities. We use :where() to keep specificity at 0. */
+:where(.remixer-root) * {
+  margin: initial;
+  padding: initial;
 }
 
 html {

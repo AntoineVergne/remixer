@@ -160,3 +160,18 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+/* Ensure our design tokens win even when the theme CSS is not present
+   (e.g. on remixer.3dpolitics.xyz). Tailwind v4 puts @theme variables in
+   a layer; this unlayered block overrides them with the same hex values. */
+:root {
+  --bg: #F5F1E8;
+  --surface: #FFFCF5;
+  --fg: #1A1A1A;
+  --muted: #6B6B6B;
+  --border: #1A1A1A;
+  --accent: #C0392B;
+  --accent-contrast: #FFFCF5;
+  --font-display: 'Helvetica Neue', 'Helvetica Now', 'Neue Haas Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-body: ui-monospace, 'IBM Plex Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+}

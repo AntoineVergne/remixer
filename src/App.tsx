@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Check,
   Copy,
@@ -89,85 +89,44 @@ function stripHtml(html: string): string {
   return tmp.textContent || tmp.innerText || "";
 }
 
-const StyleCard = ({
-  style,
+const VoiceCard = ({
+  title,
+  subtitle,
   selected,
   onClick,
+  children,
 }: {
-  style: Style;
+  title: string;
+  subtitle: string;
   selected: boolean;
   onClick: () => void;
+  children?: ReactNode;
 }) => (
   <button
     onClick={onClick}
     className={`group relative flex h-full cursor-pointer flex-col border-2 bg-[var(--surface)] p-6 text-left transition-all duration-200 ${
       selected
-        ? "border-[var(--accent)] shadow-[6px_6px_0px_0px_var(--accent)]"
-        : "border-[var(--fg)] shadow-[4px_4px_0px_0px_var(--fg)] hover:border-[var(--accent)] hover:shadow-[6px_6px_0px_0px_var(--accent)]"
+        ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-contrast)] shadow-[6px_6px_0px_0px_var(--fg)]"
+        : "border-[var(--fg)] shadow-[4px_4px_0px_0px_var(--fg)] hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] hover:shadow-[6px_6px_0px_0px_var(--fg)]"
     }`}
   >
-    <h3 className="font-display text-[1.75rem] font-black leading-tight text-[var(--fg)]">
-      {style.name}
-    </h3>
-    <p className="mb-6 mt-2 flex-1 font-['IBM_Plex_Serif'] text-[0.8125rem] leading-relaxed text-[var(--muted)]">
-      {style.descriptor}
-    </p>
-  </button>
-);
-
-const CustomCard = ({
-  selected,
-  value,
-  onChange,
-  onSelect,
-}: {
-  selected: boolean;
-  value: string;
-  onChange: (nextValue: string) => void;
-  onSelect: () => void;
-}) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (selected) {
-      inputRef.current?.focus();
-    }
-  }, [selected]);
-
-  return (
-    <div
-      onClick={onSelect}
-      className={`group relative flex h-full cursor-pointer flex-col border-2 bg-[var(--surface)] p-6 text-left transition-all duration-200 ${
-        selected
-          ? "border-[var(--accent)] shadow-[6px_6px_0px_0px_var(--accent)]"
-          : "border-[var(--fg)] shadow-[4px_4px_0px_0px_var(--fg)] hover:border-[var(--accent)] hover:shadow-[6px_6px_0px_0px_var(--accent)]"
+    <h3
+      className={`font-display text-[1.75rem] font-black leading-tight ${
+        selected ? "text-[var(--accent-contrast)]" : "text-[var(--fg)] group-hover:text-[var(--accent-contrast)]"
       }`}
     >
-      <h3 className="font-display text-[1.75rem] font-black leading-tight text-[var(--fg)]">
-        Your voice
-      </h3>
-      <p className="mb-6 mt-2 flex-1 font-['IBM_Plex_Serif'] text-[0.8125rem] leading-relaxed text-[var(--muted)]">
-        Any thinker, any era.
-      </p>
-      {selected ? (
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          placeholder="e.g. Simone de Beauvoir"
-          onChange={(event) => {
-            event.stopPropagation();
-            onChange(event.target.value);
-          }}
-          onClick={(event) => event.stopPropagation()}
-          className="w-full border border-[var(--border)]/20 bg-[var(--bg)] px-3 py-2 text-sm text-[var(--fg)] placeholder:text-[var(--muted)]/50 focus:border-[var(--accent)]/60 focus:outline-none"
-        />
-      ) : value ? (
-        <p className="truncate font-mono text-xs text-[var(--accent)]">{value}</p>
-      ) : null}
-    </div>
-  );
-};
+      {title}
+    </h3>
+    <p
+      className={`mb-6 mt-2 flex-1 font-['IBM_Plex_Serif'] text-[0.9375rem] leading-relaxed ${
+        selected ? "text-[var(--accent-contrast)]/90" : "text-[var(--muted)] group-hover:text-[var(--accent-contrast)]/90"
+      }`}
+    >
+      {subtitle}
+    </p>
+    {children}
+  </button>
+);
 
 function formatRemix(text: string) {
   return text.split("\n").map((line, index) => {
@@ -536,7 +495,7 @@ export default function App() {
       <main className="flex w-full flex-col py-10">
         {screen === "onboarding" && (
           <section
-            className="pt-20 pb-24"
+            className="pt-32 pb-32"
             style={{
               minHeight: '70vh',
               background: `
@@ -548,47 +507,47 @@ export default function App() {
             }}
           >
             <div className="px-6 text-center" style={{ maxWidth: '960px', margin: '0 auto' }}>
-              <div className="mb-16">
+              <div className="mb-20">
                 <h1 className="font-display text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.05] tracking-[-0.02em]">
                   Manifesto Remixer
                 </h1>
-                <p className="mx-auto mt-4 max-w-xl font-['IBM_Plex_Serif'] text-[1.125rem] leading-[1.7] text-[var(--muted)]">
+                <p className="mx-auto mt-5 max-w-2xl font-['IBM_Plex_Serif'] text-[1.125rem] leading-[1.7] text-[var(--muted)]">
                   Rewrite the 3D Politics manifesto through the voice of a philosopher,
                   revolutionary, or thinker of your choice.
                 </p>
               </div>
 
               <div
-                className="flex flex-col justify-center gap-6 md:flex-row"
-                style={{ margin: '0 auto', maxWidth: '760px' }}
+                className="flex flex-col justify-center gap-8 md:flex-row"
+                style={{ margin: '0 auto', maxWidth: '720px' }}
               >
                 <div
-                  className="flex flex-col items-center justify-center text-center border-2 border-[var(--fg)] bg-[var(--surface)] p-8 shadow-[6px_6px_0px_0px_var(--accent)]"
-                  style={{ minHeight: '280px', width: '100%', maxWidth: '340px' }}
+                  className="flex flex-col items-center justify-center text-center border-2 border-[var(--fg)] bg-[var(--surface)] p-10 shadow-[6px_6px_0px_0px_var(--accent)]"
+                  style={{ minHeight: '260px', width: '100%', maxWidth: '320px' }}
                 >
-                  <h2 className="font-display text-xl font-bold text-[var(--fg)]">Start remixing</h2>
-                  <p className="mb-10 mt-3 font-['IBM_Plex_Serif'] text-[1.0625rem] leading-[1.7] text-[var(--muted)]">
+                  <h2 className="font-display text-2xl font-bold text-[var(--fg)]">Start remixing</h2>
+                  <p className="mb-12 mt-4 font-['IBM_Plex_Serif'] text-[1.0625rem] leading-[1.7] text-[var(--muted)]">
                     Pick a voice and generate your own version of the manifesto.
                   </p>
                   <button
                     onClick={() => setScreen("voice")}
-                    className="border border-[var(--accent)] bg-[var(--accent)] px-10 py-5 text-base font-medium text-[var(--accent-contrast)] shadow-[3px_3px_0px_0px_var(--fg)] transition-colors hover:bg-[var(--fg)] hover:border-[var(--fg)]"
+                    className="border-2 border-[var(--accent)] bg-[var(--accent)] px-12 py-5 text-base font-medium uppercase tracking-wider text-[var(--accent-contrast)] shadow-[4px_4px_0px_0px_var(--fg)] transition-colors hover:bg-[var(--fg)] hover:border-[var(--fg)]"
                   >
                     Start
                   </button>
                 </div>
 
                 <div
-                  className="flex flex-col items-center justify-center text-center border-2 border-[var(--fg)] bg-[var(--surface)] p-8 shadow-[4px_4px_0px_0px_var(--fg)]"
-                  style={{ minHeight: '280px', width: '100%', maxWidth: '340px' }}
+                  className="flex flex-col items-center justify-center text-center border-2 border-[var(--fg)] bg-[var(--surface)] p-10 shadow-[4px_4px_0px_0px_var(--fg)]"
+                  style={{ minHeight: '260px', width: '100%', maxWidth: '320px' }}
                 >
-                  <h2 className="font-display text-xl font-bold text-[var(--fg)]">Past remixes</h2>
-                  <p className="mb-10 mt-3 font-['IBM_Plex_Serif'] text-[1.0625rem] leading-[1.7] text-[var(--muted)]">
-                    Browse remixes saved by everyone and open them side by side.
+                  <h2 className="font-display text-2xl font-bold text-[var(--fg)]">Past remixes</h2>
+                  <p className="mb-12 mt-4 font-['IBM_Plex_Serif'] text-[1.0625rem] leading-[1.7] text-[var(--muted)]">
+                    Browse the remixes saved by everyone and open them side by side.
                   </p>
                   <button
                     onClick={() => setScreen("gallery")}
-                    className="border border-[var(--fg)] bg-[var(--fg)] px-10 py-5 text-base font-medium text-[var(--surface)] shadow-[3px_3px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--fg)]"
+                    className="border-2 border-[var(--fg)] bg-[var(--fg)] px-12 py-5 text-base font-medium uppercase tracking-wider text-[var(--surface)] shadow-[4px_4px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--fg)]"
                   >
                     Browse gallery
                   </button>
@@ -609,22 +568,37 @@ export default function App() {
               </p>
             </div>
 
-            <div className="mx-auto mb-12" style={{ maxWidth: '960px' }}>
+            <div className="mx-auto mb-16" style={{ maxWidth: '960px' }}>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {styleCatalog.map((style) => (
-                  <StyleCard
+                  <VoiceCard
                     key={style.id}
-                    style={style}
+                    title={style.name}
+                    subtitle={style.descriptor}
                     selected={selectedStyle === style.id}
                     onClick={() => setSelectedStyle(style.id)}
                   />
                 ))}
-                <CustomCard
+                <VoiceCard
+                  title="Your voice"
+                  subtitle="Any thinker, any era."
                   selected={selectedStyle === "custom"}
-                  value={customAuthor}
-                  onChange={setCustomAuthor}
-                  onSelect={() => setSelectedStyle("custom")}
-                />
+                  onClick={() => setSelectedStyle("custom")}
+                >
+                  {selectedStyle === "custom" ? (
+                    <input
+                      autoFocus
+                      type="text"
+                      value={customAuthor}
+                      placeholder="e.g. Simone de Beauvoir"
+                      onChange={(event) => setCustomAuthor(event.target.value)}
+                      onClick={(event) => event.stopPropagation()}
+                      className="w-full border border-[var(--accent-contrast)]/30 bg-[var(--accent-contrast)]/10 px-3 py-2 text-sm text-[var(--accent-contrast)] placeholder:text-[var(--accent-contrast)]/50 focus:border-[var(--accent-contrast)] focus:outline-none"
+                    />
+                  ) : customAuthor ? (
+                    <p className="truncate font-mono text-xs text-[var(--accent-contrast)]/80">{customAuthor}</p>
+                  ) : null}
+                </VoiceCard>
               </div>
             </div>
 
@@ -632,9 +606,9 @@ export default function App() {
               <button
                 onClick={handleRemix}
                 disabled={!canGenerate}
-                className={`flex items-center gap-2.5 border-2 px-10 py-5 text-base font-medium uppercase tracking-wider transition-all duration-200 ${
+                className={`flex items-center gap-2.5 border-2 px-16 py-6 text-lg font-medium uppercase tracking-wider transition-all duration-200 ${
                   canGenerate
-                    ? "cursor-pointer border-[var(--fg)] bg-[var(--fg)] text-[var(--surface)] shadow-[4px_4px_0px_0px_var(--accent)] hover:bg-[var(--surface)] hover:text-[var(--fg)]"
+                    ? "cursor-pointer border-[var(--fg)] bg-[var(--fg)] text-[var(--surface)] shadow-[6px_6px_0px_0px_var(--accent)] hover:bg-[var(--surface)] hover:text-[var(--fg)]"
                     : "cursor-not-allowed border-[var(--border)]/20 bg-transparent text-[var(--muted)]"
                 }`}
               >
@@ -733,21 +707,21 @@ export default function App() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center gap-4 border-t border-[var(--border)]/10 px-6 py-10">
+            <div className="flex flex-col items-center justify-center gap-6 border-t border-[var(--border)]/10 px-6 py-14">
               <div className="mb-2 font-mono text-xs uppercase tracking-wider text-[var(--muted)]">
                 Save or download your remix
               </div>
-              <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex flex-wrap justify-center gap-5">
                 <button
                   onClick={() => downloadMarkdown(currentRemix)}
-                  className="flex items-center gap-2 border-2 border-[var(--fg)] bg-[var(--surface)] px-8 py-4 font-mono text-sm uppercase tracking-wider text-[var(--fg)] shadow-[4px_4px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--fg)] hover:text-[var(--surface)]"
+                  className="flex items-center gap-2.5 border-2 border-[var(--fg)] bg-[var(--surface)] px-10 py-5 font-mono text-sm uppercase tracking-wider text-[var(--fg)] shadow-[4px_4px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--fg)] hover:text-[var(--surface)]"
                 >
                   <Download className="h-5 w-5" />
                   Download Markdown
                 </button>
                 <button
                   onClick={() => openPrintWindow(currentRemix)}
-                  className="flex items-center gap-2 border-2 border-[var(--fg)] bg-[var(--surface)] px-8 py-4 font-mono text-sm uppercase tracking-wider text-[var(--fg)] shadow-[4px_4px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--fg)] hover:text-[var(--surface)]"
+                  className="flex items-center gap-2.5 border-2 border-[var(--fg)] bg-[var(--surface)] px-10 py-5 font-mono text-sm uppercase tracking-wider text-[var(--fg)] shadow-[4px_4px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--fg)] hover:text-[var(--surface)]"
                 >
                   <Download className="h-5 w-5" />
                   Download PDF
@@ -788,63 +762,77 @@ export default function App() {
         )}
 
         {screen === "gallery" && (
-          <section className="mx-auto max-w-6xl px-6 py-4">
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="font-display text-2xl font-black uppercase tracking-tight text-[var(--fg)]">
-                  Past remixes
-                </h2>
-                <p className="font-mono text-xs text-[var(--muted)]">
-                  {gallery.length > 0
-                    ? `${gallery.length} saved remix${gallery.length === 1 ? "" : "es"}`
-                    : "No saved remixes yet."}
-                </p>
-              </div>
-              <button
-                onClick={() => setScreen("voice")}
-                className="flex items-center gap-1.5 border border-[var(--fg)] bg-[var(--fg)] px-5 py-2.5 text-sm font-medium text-[var(--surface)] shadow-[4px_4px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--border)]"
-              >
-                <Sparkles className="h-4 w-4" />
-                Restart
-              </button>
-            </div>
-
-            {galleryLoading ? (
-              <div className="flex h-48 items-center justify-center gap-2 font-mono text-xs text-[var(--muted)]">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading gallery…
-              </div>
-            ) : gallery.length === 0 ? (
-              <div className="border border-[var(--border)]/15 bg-[var(--surface)] p-12 text-center">
-                <Sparkles className="mx-auto mb-3 h-8 w-8 text-[var(--border)]/40" />
-                <p className="font-mono text-sm text-[var(--muted)]">
-                  Generated remixes you save will appear here.
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {gallery.map((remix) => (
+          <section className="mx-auto max-w-6xl px-6 py-10">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+              <div className="lg:col-span-4">
+                <div
+                  className="flex flex-col items-center justify-center text-center border-2 border-[var(--fg)] bg-[var(--surface)] p-10 shadow-[6px_6px_0px_0px_var(--accent)]"
+                  style={{ minHeight: '260px' }}
+                >
+                  <h2 className="font-display text-2xl font-bold text-[var(--fg)]">Restart</h2>
+                  <p className="mb-12 mt-4 font-['IBM_Plex_Serif'] text-[1.0625rem] leading-[1.7] text-[var(--muted)]">
+                    Pick a new voice and generate another version of the manifesto.
+                  </p>
                   <button
-                    key={remix.id}
-                    onClick={() => openRemix(remix)}
-                    className="relative cursor-pointer border border-[var(--border)]/20 bg-[var(--surface)] p-5 text-left transition-all duration-200 hover:border-[var(--fg)] hover:shadow-[4px_4px_0px_0px_var(--accent)]"
+                    onClick={() => setScreen("voice")}
+                    className="flex items-center gap-2 border-2 border-[var(--fg)] bg-[var(--fg)] px-10 py-5 text-base font-medium uppercase tracking-wider text-[var(--surface)] shadow-[4px_4px_0px_0px_var(--accent)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--fg)]"
                   >
-                    <div className="mb-2 font-mono text-[10px] uppercase tracking-wider text-[var(--accent)]">
-                      {remix.styleName}
-                    </div>
-                    <p className="line-clamp-4 text-left text-xs leading-relaxed text-[var(--muted)]">
-                      {remix.remixText.slice(0, 240)}
-                      {remix.remixText.length > 240 ? "…" : ""}
-                    </p>
-                    <div className="mt-3 font-mono text-[9px] uppercase tracking-wider text-[var(--muted)]/70">
-                      {remix.date
-                        ? new Date(remix.date).toLocaleDateString()
-                        : "Saved remix"}
-                    </div>
+                    <Sparkles className="h-5 w-5" />
+                    Restart
                   </button>
-                ))}
+                </div>
               </div>
-            )}
+
+              <div className="lg:col-span-8">
+                <div className="mb-6">
+                  <h2 className="font-display text-2xl font-black uppercase tracking-tight text-[var(--fg)]">
+                    Past remixes
+                  </h2>
+                  <p className="font-mono text-xs text-[var(--muted)]">
+                    {gallery.length > 0
+                      ? `${gallery.length} saved remix${gallery.length === 1 ? "" : "es"}`
+                      : "No saved remixes yet."}
+                  </p>
+                </div>
+
+                {galleryLoading ? (
+                  <div className="flex h-48 items-center justify-center gap-2 font-mono text-xs text-[var(--muted)]">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading gallery…
+                  </div>
+                ) : gallery.length === 0 ? (
+                  <div className="border border-[var(--border)]/15 bg-[var(--surface)] p-12 text-center">
+                    <Sparkles className="mx-auto mb-3 h-8 w-8 text-[var(--border)]/40" />
+                    <p className="font-mono text-sm text-[var(--muted)]">
+                      Generated remixes you save will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    {gallery.map((remix) => (
+                      <button
+                        key={remix.id}
+                        onClick={() => openRemix(remix)}
+                        className="group relative flex cursor-pointer flex-col border-2 border-[var(--fg)] bg-[var(--surface)] p-6 text-left transition-all duration-200 hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--accent-contrast)] hover:shadow-[6px_6px_0px_0px_var(--fg)]"
+                      >
+                        <h3 className="font-display text-[1.5rem] font-black leading-tight text-[var(--fg)] group-hover:text-[var(--accent-contrast)]">
+                          {remix.styleName}
+                        </h3>
+                        <p className="mb-4 mt-2 line-clamp-4 text-left font-['IBM_Plex_Serif'] text-[0.9375rem] leading-relaxed text-[var(--muted)] group-hover:text-[var(--accent-contrast)]/90">
+                          {remix.remixText.slice(0, 180)}
+                          {remix.remixText.length > 180 ? "…" : ""}
+                        </p>
+                        <div className="mt-auto font-mono text-[10px] uppercase tracking-wider text-[var(--muted)] group-hover:text-[var(--accent-contrast)]/80">
+                          {remix.date
+                            ? new Date(remix.date).toLocaleDateString()
+                            : "Saved remix"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </section>
         )}
       </main>
